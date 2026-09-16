@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111">
+<title>Hello World AR</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif}
+#camera{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
+#panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(78vw,440px);aspect-ratio:16/9;background:#fff;color:#111;display:none;align-items:center;justify-content:center;font-size:clamp(24px,7vw,52px);font-weight:700;border-radius:5px;box-shadow:0 12px 40px #0009;touch-action:none}
+#msg{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#000b;color:#fff;padding:11px 15px;border-radius:14px;text-align:center;max-width:90%;font-size:14px}
+#ui{position:fixed;left:0;right:0;bottom:0;padding:18px;display:flex;gap:10px;justify-content:center}
+button{border:0;border-radius:999px;padding:14px 20px;font-size:16px;font-weight:700}
+#start{background:#fff;color:#111}
+</style>
+</head>
+<body>
+<video id="camera" autoplay playsinline muted></video>
+<div id="panel">HELLO WORLD</div>
+<div id="msg">Tap Start Camera</div>
+<div id="ui"><button id="start">Start Camera</button><button id="show" hidden>Show Panel</button><button id="hide" hidden>Hide Panel</button></div>
+<script>
+const camera=document.querySelector('#camera'),panel=document.querySelector('#panel'),msg=document.querySelector('#msg');
+const start=document.querySelector('#start'),show=document.querySelector('#show'),hide=document.querySelector('#hide');
+async function startCamera(){
+ try{
+  if(!window.isSecureContext){msg.textContent='Camera requires HTTPS. Open your GitHub Pages https:// address.';return}
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  camera.srcObject=stream; await camera.play();
+  msg.textContent='Camera ready. Look at a surface.';
+  start.hidden=true;show.hidden=false;
+ }catch(e){msg.textContent='Camera permission denied or unavailable. Check Chrome camera permissions.'}
+}
+start.onclick=startCamera;
+show.onclick=()=>{panel.style.display='flex';show.hidden=true;hide.hidden=false;msg.textContent='Drag HELLO WORLD onto the surface.'};
+hide.onclick=()=>{panel.style.display='none';hide.hidden=true;show.hidden=false};
+let drag=false,dx=0,dy=0;
+panel.addEventListener('pointerdown',e=>{
+ drag=true;panel.setPointerCapture(e.pointerId);
+ const r=panel.getBoundingClientRect();dx=e.clientX-(r.left+r.width/2);dy=e.clientY-(r.top+r.height/2);
+});
+panel.addEventListener('pointermove',e=>{if(drag){panel.style.left=(e.clientX-dx)+'px';panel.style.top=(e.clientY-dy)+'px'}});
+panel.addEventListener('pointerup',()=>drag=false);
+</script>
+</body>
+</html>
